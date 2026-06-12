@@ -13,25 +13,26 @@ datasource db {
 }
 
 model User {
-  id        Int   @id @default(autoincrement())
-  email     String   @unique
-  createdAt DateTime @default(now())
+  id             Int      @id @default(autoincrement())
+  email          String   @unique
+  hashedPassword String
+  createdAt      DateTime @default(now())
 }
 
 model Status {
-  id        Int   @id @default(autoincrement())
-  name      String   @unique
-  jobs      Jobs[]
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  jobs Jobs[]
 }
 
 model Company {
-  id        Int   @id @default(autoincrement())
-  name      String   @unique
-  jobs      Jobs[]
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  jobs Jobs[]
 }
 
 model Jobs {
-  id          Int   @id @default(autoincrement())
+  id          Int    @id @default(autoincrement())
   companyId   Int
   description String
   statusId    Int
