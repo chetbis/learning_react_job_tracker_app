@@ -15,4 +15,4 @@ if (!globalThis.prismaClient) {
     globalThis.prismaClient = new PrismaClient({ adapter });
 }
 // @ts-expect-error - same reason as above
-export const prisma = globalThis.prismaClient;
+export const prisma = globalThis.prismaClient as PrismaClient;

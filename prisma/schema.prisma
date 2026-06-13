@@ -32,12 +32,11 @@ model Company {
 }
 
 model Jobs {
-  id          Int    @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   companyId   Int
-  description String
+  description String?
   statusId    Int
   role        String
-
   status  Status  @relation(fields: [statusId], references: [id])
   company Company @relation(fields: [companyId], references: [id])
 }
