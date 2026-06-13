@@ -2,6 +2,8 @@ import { Prisma } from "../generated/prisma/client";
 import { prisma } from "./db";
 import * as z from "zod";
 
+import { Result } from "./types";
+
 const jobSchema = z.object({
   company: z.string().min(1, "Company name is required"),
   description: z.string().optional(),
@@ -14,10 +16,6 @@ const updateJobSchema = jobSchema; // For updates, all fields are optional, but 
 const jobSchemaWithId = jobSchema.extend({ id: z.number() }); // For operations that require an ID, we can use this schema to validate the entire job object
 
 export type Job = z.infer<typeof jobSchemaWithId>;
-
-export type Result<T> =
-  | { success: true; data: T }
-  | { success: false; error: string };
 
 type PrismaJob = Prisma.JobsGetPayload<{
   include: { company: true; status: true };
@@ -152,7 +150,7 @@ export async function deleteJob(id: number): Promise<Result<boolean>> {
   }
 }
 
-export async function getAllStatuses(): Promise<
+export async function getStats(): Promise<
   Result<{ name: string; count: number }[]>
 > {
   try {
