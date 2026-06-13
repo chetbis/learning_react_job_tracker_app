@@ -177,3 +177,20 @@ export async function getStats(): Promise<
     };
   }
 }
+
+export async function getPaginatedJobs(take: number, skip: number): Promise<Result<Job[]>> {
+  try {
+    const page = await prisma.jobs.findMany({
+      take,
+      skip,
+      include: includeRelations,
+      orderBy: {
+        id: "asc"
+      }
+    });
+    return { success: true, data: page.map(mapJob) };
+  } catch (error) {
+    console.error("Error fetching paginated jobs:", error);
+    return { success: false, error: "Database error: Could not fetch jobs." };
+  }
+}

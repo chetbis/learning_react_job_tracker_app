@@ -1,13 +1,16 @@
 import Link from "next/link";
 import { getAllJobs, getStats } from "../lib/jobs";
 import StatsCount from "../ui/StatsCount";
-import JobList from "../ui/JobList";
+import JobList from "../ui/job-list/JobList";
 import EmptyState from "./EmptyState";
 import ErrorState from "./ErrorState";
+import { fetchMoreJobsAction } from '../lib/actions';
+
+const PAGE_SIZE = 5;
 
 export default async function Jobs() {
   const stats = await getStats();
-  const jobs = await getAllJobs();
+  const jobs = await fetchMoreJobsAction(PAGE_SIZE, 0);
 
   return (
     <div className="container mx-auto max-w-2xl p-6">
@@ -29,7 +32,7 @@ export default async function Jobs() {
 
       {!jobs.success && <ErrorState error={jobs.error} />}
       {jobs.success && jobs.data.length === 0 && <EmptyState />}
-      {jobs.success && jobs.data.length > 0 && <JobList jobs={jobs.data} />}
+      {jobs.success && jobs.data.length > 0 && <JobList initialJobs={jobs.data} />}
     </div>
   );
 }

@@ -54,6 +54,45 @@ async function main() {
     "OpenAI",
     "Stripe",
     "Airbnb",
+    "Apple",
+    "Tesla",
+    "Uber",
+    "Lyft",
+    "GitHub",
+    "GitLab",
+    "Slack",
+    "Salesforce",
+    "Adobe",
+    "Figma",
+    "Atlassian",
+    "Zoom",
+    "Spotify",
+    "Pinterest",
+    "Twitter",
+    "LinkedIn",
+    "TikTok",
+    "Shopify",
+    "Coinbase",
+    "Robinhood",
+    "Plaid",
+    "Square",
+    "Asana",
+    "Jira",
+    "Datadog",
+    "Snowflake",
+    "Cloudflare",
+    "Fastly",
+    "Twilio",
+    "HubSpot",
+    "Canva",
+    "Notion",
+    "Linear",
+    "Vercel",
+    "Netlify",
+    "Supabase",
+    "Prisma",
+    "Clerk",
+    "Auth0",
   ];
 
   for (const name of companies) {
@@ -66,7 +105,42 @@ async function main() {
   console.log("Seeded companies");
 
   // 4. Seed Jobs
-  const jobsData = [
+  const jobRoles = [
+    "Software Engineer",
+    "Senior Software Engineer",
+    "Staff Software Engineer",
+    "Principal Software Engineer",
+    "Frontend Engineer",
+    "Senior Frontend Engineer",
+    "Backend Engineer",
+    "Senior Backend Engineer",
+    "Fullstack Developer",
+    "Senior Fullstack Developer",
+    "DevOps Engineer",
+    "Site Reliability Engineer",
+    "Data Scientist",
+    "Machine Learning Engineer",
+    "Product Manager",
+    "Engineering Manager",
+    "UI/UX Designer",
+    "QA Engineer",
+    "Solutions Architect",
+    "Cloud Engineer",
+    "Mobile Engineer (iOS)",
+    "Mobile Engineer (Android)",
+    "Security Engineer",
+    "Database Administrator",
+    "Systems Engineer"
+  ];
+
+  const jobsData: Array<{
+    role: string;
+    companyName: string;
+    statusName: string;
+    description: string;
+  }> = [];
+
+  const initialJobs = [
     {
       role: "Senior Frontend Engineer",
       companyName: "Google",
@@ -104,6 +178,23 @@ async function main() {
       description: "Working on VS Code extensions and core features.",
     },
   ];
+
+  jobsData.push(...initialJobs);
+
+  const remainingCount = 500 - initialJobs.length;
+  for (let i = 0; i < remainingCount; i++) {
+    const role = jobRoles[i % jobRoles.length];
+    const companyName = companies[Math.floor(i / jobRoles.length) % companies.length];
+    const statusName = statuses[i % statuses.length];
+    const description = `This is a simulated description for the position of ${role} at ${companyName}. Job ID: #${i + 1000}. Duties include designing, building, and maintaining reliable systems in collaboration with cross-functional teams.`;
+
+    jobsData.push({
+      role,
+      companyName,
+      statusName,
+      description,
+    });
+  }
 
   for (const job of jobsData) {
     const company = await prisma.company.findUnique({ where: { name: job.companyName } });
