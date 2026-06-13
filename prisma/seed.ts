@@ -1,27 +1,24 @@
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { PrismaClient } from "../app/generated/prisma/client";
-
-if (!process.env["DATABASE_URL"]) {
-  throw new Error("DATABASE_URL environment variable is not set.");
-}
-
-const adapter = new PrismaBetterSqlite3({ url: process.env["DATABASE_URL"] });
-const prisma = new PrismaClient({ adapter });
+import bcrypt from "bcryptjs";
+import { prisma } from '../app/lib/db';
 
 async function main() {
   console.log("Start seeding...");
 
   // 1. Seed Users
   const users = [
-    { email: "alice@example.com" },
-    { email: "bob@example.com" },
+    { email: "alice@example.com", password: "password123" },
+    { email: "bob@example.com", password: "password456" },
   ];
 
   for (const user of users) {
+    const hashedPassword = await bcrypt.hash(user.password, 10);
     await prisma.user.upsert({
       where: { email: user.email },
-      update: {},
-      create: user,
+      update: { hashedPassword },
+      create: {
+        email: user.email,
+        hashedPassword,
+      },
     });
   }
   console.log("Seeded users");
@@ -109,18 +106,33 @@ async function main() {
   ];
 
   for (const job of jobsData) {
-    await prisma.jobs.create({
-      data: {
-        role: job.role,
-        description: job.description,
-        company: {
-          connect: { name: job.companyName },
+    const company = await prisma.company.findUnique({ where: { name: job.companyName } });
+    const status = await prisma.status.findUnique({ where: { name: job.statusName } });
+
+    if (company && status) {
+      const existingJob = await prisma.jobs.findFirst({
+        where: {
+          role: job.role,
+          companyId: company.id,
+          statusId: status.id,
         },
-        status: {
-          connect: { name: job.statusName },
-        },
-      },
-    });
+      });
+
+      if (!existingJob) {
+        await prisma.jobs.create({
+          data: {
+            role: job.role,
+            description: job.description,
+            company: {
+              connect: { id: company.id },
+            },
+            status: {
+              connect: { id: status.id },
+            },
+          },
+        });
+      }
+    }
   }
   console.log("Seeded jobs");
 
