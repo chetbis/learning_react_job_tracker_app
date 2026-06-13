@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ROUTES } from "../lib/routes";
 
 export default function EmptyState() {
   return (
@@ -15,7 +16,7 @@ export default function EmptyState() {
         Start tracking your career journey by adding your first job application. We&apos;ll help you organize your progress.
       </p>
       <Link
-        href="/jobs/new"
+        href={ROUTES.NEW_JOB}
         className="px-6 py-2.5 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-colors shadow-sm"
       >
         Add your first job

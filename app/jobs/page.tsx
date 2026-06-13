@@ -2,8 +2,8 @@ import Link from "next/link";
 import { getAllJobs, getStats } from "../lib/jobs";
 import StatsCount from "../ui/StatsCount";
 import JobList from "../ui/JobList";
-import EmptyState from "../ui/EmptyState";
-import ErrorState from "../ui/ErrorState";
+import EmptyState from "./EmptyState";
+import ErrorState from "./ErrorState";
 
 export default async function Jobs() {
   const stats = await getStats();
