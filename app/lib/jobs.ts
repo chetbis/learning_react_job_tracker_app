@@ -178,15 +178,49 @@ export async function getStats(): Promise<
   }
 }
 
-export async function getPaginatedJobs(take: number, skip: number): Promise<Result<Job[]>> {
+export async function getPaginatedJobs(
+  take: number,
+  skip: number,
+  search?: string,
+  status?: string,
+  sortBy?: string
+): Promise<Result<Job[]>> {
   try {
+    const where: Prisma.JobsWhereInput = {};
+
+    if (search && search.trim() !== "") {
+      where.OR = [
+        { company: { name: { contains: search } } },
+        { role: { contains: search } },
+        { description: { contains: search } },
+      ];
+    }
+
+    if (status && status !== "Total" && status !== "All") {
+      where.status = {
+        name: status,
+      };
+    }
+
+    let orderBy: Prisma.JobsOrderByWithRelationInput = { id: "desc" };
+
+    if (sortBy) {
+      const [field, direction] = sortBy.split("-") as [string, "asc" | "desc"];
+      if (field === "company") {
+        orderBy = { company: { name: direction } };
+      } else if (field === "role") {
+        orderBy = { role: direction };
+      } else if (field === "id") {
+        orderBy = { id: direction };
+      }
+    }
+
     const page = await prisma.jobs.findMany({
       take,
       skip,
+      where,
       include: includeRelations,
-      orderBy: {
-        id: "asc"
-      }
+      orderBy,
     });
     return { success: true, data: page.map(mapJob) };
   } catch (error) {

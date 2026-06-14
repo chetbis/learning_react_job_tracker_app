@@ -4,9 +4,11 @@ import { StatCard, STATUS_CONFIG } from "./StatCard";
 type StatsResult = Awaited<ReturnType<typeof getStats>>;
 export type StatsCountProps = {
   stats: Extract<StatsResult, { success: true }>["data"];
+  activeStatus?: string;
+  onStatusSelect?: (status: string) => void;
 };
 
-export default function StatsCount({ stats }: StatsCountProps) {
+export default function StatsCount({ stats, activeStatus = "Total", onStatusSelect }: StatsCountProps) {
   const totalCount = stats.reduce((acc, curr) => acc + curr.count, 0);
 
   const allStats = [{ name: "Total", count: totalCount }, ...stats];
@@ -16,7 +18,13 @@ export default function StatsCount({ stats }: StatsCountProps) {
       {/* Grid of status cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
         {allStats.map((item) => (
-          <StatCard key={item.name} name={item.name} count={item.count} />
+          <StatCard 
+            key={item.name} 
+            name={item.name} 
+            count={item.count} 
+            active={activeStatus === item.name}
+            onClick={onStatusSelect ? () => onStatusSelect(item.name) : undefined}
+          />
         ))}
       </div>
 

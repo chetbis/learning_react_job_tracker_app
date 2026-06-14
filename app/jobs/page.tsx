@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getStats } from "../lib/jobs";
-import StatsCount from "../ui/StatsCount";
 import JobList from "../ui/job-list/JobList";
 import EmptyState from "./EmptyState";
 import ErrorState from "./ErrorState";
@@ -28,11 +27,15 @@ export default async function Jobs() {
         </div>
       </div>
 
-      {stats.success && stats.data.length > 0 && <StatsCount stats={stats.data} />}
-
       {!jobs.success && <ErrorState error={jobs.error} />}
       {jobs.success && jobs.data.length === 0 && <EmptyState />}
-      {jobs.success && jobs.data.length > 0 && <JobList initialJobs={jobs.data} pageSize={PAGE_SIZE} />}
+      {jobs.success && jobs.data.length > 0 && (
+        <JobList 
+          initialJobs={jobs.data} 
+          pageSize={PAGE_SIZE} 
+          stats={stats.success ? stats.data : undefined} 
+        />
+      )}
     </div>
   );
 }

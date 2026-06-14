@@ -220,13 +220,55 @@ export const STATUS_CONFIG: Record<
 export type StatCardProps = {
   name: string;
   count: number;
+  onClick?: () => void;
+  active?: boolean;
 };
 
-export function StatCard({ name, count }: StatCardProps) {
+export function StatCard({ name, count, onClick, active }: StatCardProps) {
   const config = STATUS_CONFIG[name] || STATUS_CONFIG.Declined;
+  const isClickable = !!onClick;
+
+  let activeStyles = "";
+  if (active) {
+    if (name === "Total") {
+      activeStyles = "ring-2 ring-zinc-500/35 border-zinc-500 dark:border-zinc-400 dark:ring-zinc-400/30 shadow-md bg-zinc-50/80 dark:bg-zinc-800/40";
+    } else if (name === "New") {
+      activeStyles = "ring-2 ring-sky-500/35 border-sky-500 dark:border-sky-400 dark:ring-sky-400/30 shadow-md bg-sky-50/60 dark:bg-sky-950/20";
+    } else if (name === "Applied") {
+      activeStyles = "ring-2 ring-blue-500/35 border-blue-500 dark:border-blue-400 dark:ring-blue-400/30 shadow-md bg-blue-50/60 dark:bg-blue-950/20";
+    } else if (name === "Interviewing") {
+      activeStyles = "ring-2 ring-amber-500/35 border-amber-500 dark:border-amber-400 dark:ring-amber-400/30 shadow-md bg-amber-50/60 dark:bg-amber-950/20";
+    } else if (name === "Offer") {
+      activeStyles = "ring-2 ring-emerald-500/35 border-emerald-500 dark:border-emerald-400 dark:ring-emerald-400/30 shadow-md bg-emerald-50/60 dark:bg-emerald-950/20";
+    } else if (name === "Accepted") {
+      activeStyles = "ring-2 ring-green-500/35 border-green-500 dark:border-green-400 dark:ring-green-400/30 shadow-md bg-green-50/60 dark:bg-green-950/20";
+    } else if (name === "Rejected") {
+      activeStyles = "ring-2 ring-red-500/35 border-red-500 dark:border-red-400 dark:ring-red-400/30 shadow-md bg-red-50/60 dark:bg-red-950/20";
+    } else if (name === "Withdrawn") {
+      activeStyles = "ring-2 ring-purple-500/35 border-purple-500 dark:border-purple-400 dark:ring-purple-400/30 shadow-md bg-purple-50/60 dark:bg-purple-950/20";
+    } else {
+      activeStyles = "ring-2 ring-zinc-500/35 border-zinc-500 dark:border-zinc-400 dark:ring-zinc-400/30 shadow-md";
+    }
+  }
+
   return (
     <div
-      className={`flex flex-col justify-between p-3.5 bg-white dark:bg-zinc-900 border rounded-xl shadow-[0_1px_2px_0_rgba(0,0,0,0.02)] transition-all duration-300 hover:scale-[1.02] hover:shadow-sm ${config.bgClass} ${config.darkBgClass} ${config.borderClass}`}
+      onClick={onClick}
+      role={isClickable ? "button" : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onKeyDown={
+        isClickable
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
+      className={`flex flex-col justify-between p-3.5 bg-white dark:bg-zinc-900 border rounded-xl shadow-[0_1px_2px_0_rgba(0,0,0,0.02)] transition-all duration-300 hover:scale-[1.02] hover:shadow-sm ${
+        isClickable ? "cursor-pointer select-none" : ""
+      } ${config.bgClass} ${config.darkBgClass} ${config.borderClass} ${activeStyles}`}
     >
       <div className="flex items-center justify-between gap-2 mb-2">
         <span className="text-[10px] font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
