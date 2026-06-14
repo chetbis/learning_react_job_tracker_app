@@ -7,6 +7,7 @@ import { getViewJobRoute } from "../../lib/routes";
 import { useEffect, useRef, useState } from "react";
 import { JobItemPlaceholder } from "./JobItemPlaceholder";
 import { fetchMoreJobsAction } from "@/app/lib/actions";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 
 export type JobListProps = {
   initialJobs: Job[];
@@ -16,28 +17,40 @@ export type JobListProps = {
 export default function JobList({ initialJobs, pageSize = 20 }: JobListProps) {
   const [jobs, setJobs] = useState<Job[]>(initialJobs);
   const [offset, setOffset] = useState(initialJobs.length);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(initialJobs.length >= pageSize);
   const [isLoading, setIsLoading] = useState(false);
+  const [scrollMargin, setScrollMargin] = useState(0);
 
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const offsetRef = useRef(offset);
-  const hasMoreRef = useRef(hasMore);
-  const isLoadingRef = useRef(isLoading);
+  const listRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => { offsetRef.current = offset; }, [offset]);
-  useEffect(() => { hasMoreRef.current = hasMore; }, [hasMore]);
-  useEffect(() => { isLoadingRef.current = isLoading; }, [isLoading]);
-
+  // Safely measure the offset margin after the element is painted
   useEffect(() => {
-    const observer = new IntersectionObserver(async (entries) => {
-      if (entries[0].isIntersecting && hasMoreRef.current && !isLoadingRef.current) {
+    if (listRef.current) {
+      setScrollMargin(listRef.current.offsetTop);
+    }
+  }, []);
 
-        isLoadingRef.current = true;
+  // Set up the window virtualizer
+  const rowVirtualizer = useWindowVirtualizer({
+    count: jobs.length,
+    estimateSize: () => 88, // 76px card + 12px gap
+    scrollMargin,
+  });
+
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  const lastItem = virtualItems[virtualItems.length - 1];
+  const lastIndex = lastItem ? lastItem.index : -1;
+
+  // Infinite Scroll loading trigger
+  useEffect(() => {
+    if (lastIndex === -1 || !hasMore || isLoading) return;
+
+    if (lastIndex >= jobs.length - 3) {
+      const loadMore = async () => {
         setIsLoading(true);
+        const result = await fetchMoreJobsAction(pageSize, offset);
 
-        const result = await fetchMoreJobsAction(pageSize, offsetRef.current);
-
-        if (result.success && result.data) {
+        if (result.success) {
           const newJobs = result.data;
           if (newJobs.length) {
             setJobs((prevJobs) => [...prevJobs, ...newJobs]);
@@ -46,49 +59,63 @@ export default function JobList({ initialJobs, pageSize = 20 }: JobListProps) {
           if (newJobs.length < pageSize) {
             setHasMore(false);
           }
+        } else {
+          console.error("Failed to fetch more jobs:", result.error);
         }
-        isLoadingRef.current = false;
         setIsLoading(false);
-      }
+      };
 
-    }, { threshold: 0.1 });
-
-    if (sentinelRef.current) {
-      observer.observe(sentinelRef.current)
+      loadMore();
     }
-
-    return () => observer.disconnect();
-
-  }, [pageSize]);
+  }, [lastIndex, jobs.length, pageSize, hasMore, isLoading, offset]);
 
   return (
-    <>
-      <ul className="flex flex-col gap-3">
-        {jobs.map((job) => (
-          <li key={job.id}>
-            <Link
-              href={getViewJobRoute(job.id)}
-              className="flex items-center justify-between p-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm"
+    <div ref={listRef} className="w-full">
+      <ul
+        className="relative w-full"
+        style={{
+          height: `${rowVirtualizer.getTotalSize()}px`,
+        }}
+      >
+        {virtualItems.map((virtualItem) => {
+          const job = jobs[virtualItem.index];
+          if (!job) return null;
+
+          return (
+            <li
+              key={virtualItem.key}
+              ref={rowVirtualizer.measureElement}
+              data-index={virtualItem.index}
+              className="absolute left-0 top-0 w-full"
+              style={{
+                transform: `translateY(${virtualItem.start - rowVirtualizer.options.scrollMargin
+                  }px)`,
+                paddingBottom: "12px", // Simulates the gap-3 between list items
+              }}
             >
-              <div>
-                <p className="font-semibold text-gray-900 dark:text-white">
-                  {job.company}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-zinc-400">
-                  {job.role}
-                </p>
-              </div>
-              <StatusBadge status={job.status} />
-            </Link>
-          </li>
-        ))}
-      </ul>{
-        hasMore && (
-          <div ref={sentinelRef}>
-            {isLoading && <JobItemPlaceholder className="mt-3" />}
-          </div>
-        )
-      }
-    </>
+              <Link
+                href={getViewJobRoute(job.id)}
+                className="flex items-center justify-between p-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm hover:border-gray-300 dark:hover:border-zinc-600 transition-colors"
+              >
+                <div>
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    {job.company}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-zinc-400">
+                    {job.role}
+                  </p>
+                </div>
+                <StatusBadge status={job.status} />
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+
+      {/* Show the loading placeholder below the list container */}
+      {hasMore && isLoading && (
+        <JobItemPlaceholder className="mt-3" />
+      )}
+    </div>
   );
 }

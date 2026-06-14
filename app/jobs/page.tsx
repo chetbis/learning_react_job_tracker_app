@@ -32,7 +32,7 @@ export default async function Jobs() {
 
       {!jobs.success && <ErrorState error={jobs.error} />}
       {jobs.success && jobs.data.length === 0 && <EmptyState />}
-      {jobs.success && jobs.data.length > 0 && <JobList initialJobs={jobs.data} />}
+      {jobs.success && jobs.data.length > 0 && <JobList initialJobs={jobs.data} pageSize={PAGE_SIZE} />}
     </div>
   );
 }
