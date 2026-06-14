@@ -25,7 +25,7 @@ export function JobCard({ job }: JobCardProps) {
         </div>
 
         <div>
-          <p className="font-semibold text-gray-900 dark:text-zinc-150 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-200">
+          <p className="font-semibold text-blue-500 dark:text-blue-400">
             {job.company}
           </p>
           <p className="text-sm text-gray-500 dark:text-zinc-400 font-medium">

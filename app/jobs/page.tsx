@@ -4,6 +4,7 @@ import JobList from "../ui/job-list/JobList";
 import EmptyState from "./EmptyState";
 import ErrorState from "./ErrorState";
 import { fetchMoreJobsAction } from '../lib/actions';
+import { logout } from "../lib/auth";
 
 const PAGE_SIZE = 10;
 
@@ -24,6 +25,13 @@ export default async function Jobs() {
           >
             + Add Job
           </Link>
+          <form action={logout}>
+            <button
+              className="px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-zinc-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors shadow-2xs"
+            >
+              Log Out
+            </button>
+          </form>
         </div>
       </div>
 
