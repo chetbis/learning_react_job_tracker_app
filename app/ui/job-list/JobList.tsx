@@ -19,7 +19,7 @@ export default function JobList({ initialJobs, pageSize = 20 }: JobListProps) {
   const [offset, setOffset] = useState(initialJobs.length);
   const [hasMore, setHasMore] = useState(initialJobs.length >= pageSize);
   const [isLoading, setIsLoading] = useState(false);
-  const [scrollMargin, setScrollMargin] = useState(0);
+  const [scrollMargin, setScrollMargin] = useState(400);
 
   const listRef = useRef<HTMLDivElement | null>(null);
 
