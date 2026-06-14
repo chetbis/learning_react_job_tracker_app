@@ -1,5 +1,6 @@
 "use server";
 
+import { verifySession } from './dal';
 import { getPaginatedJobs } from './jobs';
 
 export async function fetchMoreJobsAction(
@@ -9,5 +10,6 @@ export async function fetchMoreJobsAction(
   status?: string,
   sortBy?: string
 ) {
+  await verifySession();
   return getPaginatedJobs(take, skip, search, status, sortBy);
 }

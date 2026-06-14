@@ -5,16 +5,24 @@ import { ROUTES } from "./app/lib/routes";
 
 export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
-  const isProtectedRoute = path.startsWith('/jobs');  
+
+  const isServerAction = request.headers.has("next-action");
+  if (isServerAction) {
+    return NextResponse.next();
+  }
+
+  const isProtectedRoute = path.startsWith('/jobs');
 
   const sessionCookie = request.cookies.get('session');
-  let session: JWTVerifyResult<JWTPayload> | null = null; 
+  let session: JWTVerifyResult<JWTPayload> | null = null;
 
   try {
     session = await decrypt(sessionCookie?.value ?? '');
-  } catch { }
+  } catch (error) {
+    console.log(error);
+  }
 
-  if (isProtectedRoute && !session ) {
+  if (isProtectedRoute && !session) {
     return NextResponse.redirect(new URL(ROUTES.LOGIN, request.url));
   }
 
